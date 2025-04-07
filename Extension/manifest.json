@@ -1,0 +1,39 @@
+{
+    "manifest_version": 3,
+    "name": "AI Misinformation Detector",
+    "version": "1.0",
+    "description": "Fact-check and analyze misinformation from selected text.",
+    "icons": {
+        "128": "Assets/icon.png"
+    },
+    "permissions": [
+        "activeTab",
+        "scripting",
+        "contextMenus",
+        "storage",
+        "tabs"
+    ],
+    "host_permissions": [
+        "http://localhost:8000/*"
+    ],
+    "action": {
+        "default_popup": "popup.html",
+        "default_icon": {
+            "128": "Assets/icon.png"
+        },
+        "default_title": "AI Misinformation Detector"
+    },
+    "background": {
+        "service_worker": "background.js"
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "<all_urls>"
+            ],
+            "js": [
+                "content.js"
+            ]
+        }
+    ]
+}
