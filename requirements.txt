@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+transformers==4.30.2
+torch
+newspaper3k
+scikit-learn
+pydantic
+lime
+aiohttp
+uvicorn[standard]
+python-multipart
+python-jose[cryptography]
+passlib[bcrypt]
