@@ -1,13 +1,13 @@
 fastapi
-uvicorn
-transformers==4.30.2
+uvicorn[standard]
+transformers==4.36.0
+tokenizers==0.15.1
 torch
 newspaper3k
 scikit-learn
 pydantic
 lime
 aiohttp
-uvicorn[standard]
 python-multipart
 python-jose[cryptography]
 passlib[bcrypt]

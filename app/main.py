@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.routes import analyze, image_check
+from app.routes import analyze
 import uvicorn
 from dotenv import load_dotenv
 
@@ -13,8 +13,7 @@ app = FastAPI(
 )
 
 # Register routes
-app.include_router(analyze.router, prefix="/analyze", tags=["NLP Analysis"])
-#app.include_router(image_check.router, prefix="/image", tags=["Image Analysis"])
+app.include_router(analyze.router)
 
 # Optional: For running via python main.py
 if __name__ == "__main__":
