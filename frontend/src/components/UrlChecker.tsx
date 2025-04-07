@@ -30,6 +30,13 @@ interface AnalysisResponse {
   sentimentConfidence: number;
 }
 
+type VerdictType = {
+  color: string;
+  bgColor: string;
+  borderColor: string;
+  icon: JSX.Element;
+};
+
 const ProgressBar = ({ value, label }: { value: number; label: string }) => {
   const percentage = (value * 100).toFixed(1);
   
@@ -62,8 +69,52 @@ const ProgressBar = ({ value, label }: { value: number; label: string }) => {
   );
 };
 
+const getVerdictStyles = (verdict: string): VerdictType => {
+  const lowercaseVerdict = verdict.toLowerCase();
+  
+  if (lowercaseVerdict.includes('highly suspicious')) {
+    return {
+      color: 'text-red-400',
+      bgColor: 'from-red-950/30 to-red-900/10',
+      borderColor: 'border-red-500/20',
+      icon: <AlertCircle className="w-6 h-6 text-red-400" />
+    };
+  } else if (lowercaseVerdict.includes('suspicious')) {
+    return {
+      color: 'text-orange-400',
+      bgColor: 'from-orange-950/30 to-orange-900/10',
+      borderColor: 'border-orange-500/20',
+      icon: <AlertCircle className="w-6 h-6 text-orange-400" />
+    };
+  } else if (lowercaseVerdict.includes('moderate')) {
+    return {
+      color: 'text-yellow-400',
+      bgColor: 'from-yellow-950/30 to-yellow-900/10',
+      borderColor: 'border-yellow-500/20',
+      icon: <Info className="w-6 h-6 text-yellow-400" />
+    };
+  } else if (lowercaseVerdict.includes('reliable') || lowercaseVerdict.includes('trustworthy')) {
+    return {
+      color: 'text-green-400',
+      bgColor: 'from-green-950/30 to-green-900/10',
+      borderColor: 'border-green-500/20',
+      icon: <CheckCircle className="w-6 h-6 text-green-400" />
+    };
+  }
+  
+  // Default/Neutral styling
+  return {
+    color: 'text-najm-purple',
+    bgColor: 'from-najm-purple/10 to-purple-400/5',
+    borderColor: 'border-najm-purple/20',
+    icon: <Info className="w-6 h-6 text-najm-purple" />
+  };
+};
+
 const ResultsCard = ({ analysis }: { analysis: AnalysisResponse | null }) => {
   if (!analysis) return null;
+  
+  const verdictStyles = getVerdictStyles(analysis.verdict);
 
   return (
     <Card className="mt-6 p-8 bg-gradient-to-br from-najm-dark via-black/90 to-najm-dark border border-najm-purple/30 shadow-xl shadow-najm-purple/10">
@@ -79,11 +130,13 @@ const ResultsCard = ({ analysis }: { analysis: AnalysisResponse | null }) => {
           <ProgressBar value={analysis.sentimentConfidence} label="Confidence Score" />
         </div>
 
-        {/* Verdict Section */}
-        <div className="p-5 bg-gradient-to-r from-najm-purple/10 to-purple-400/5 rounded-xl border border-najm-purple/20">
+        {/* Updated Verdict Section */}
+        <div className={`p-5 bg-gradient-to-r ${verdictStyles.bgColor} rounded-xl border ${verdictStyles.borderColor} backdrop-blur-sm transition-all duration-300`}>
           <div className="flex items-center gap-3">
-            <Info className="w-6 h-6 text-najm-purple animate-pulse" />
-            <h4 className="font-semibold text-lg text-white/90">{analysis.verdict}</h4>
+            {verdictStyles.icon}
+            <h4 className={`font-semibold text-lg ${verdictStyles.color}`}>
+              {analysis.verdict}
+            </h4>
           </div>
         </div>
 
@@ -135,13 +188,17 @@ const UrlChecker: React.FC<UrlCheckerProps> = ({ isHeroSection = false, reducedW
     setLoading(true);
     
     try {
-      const response = await fetch("http://127.0.0.1:8000/analyze/sentiment/text", {
+      const endpoint = mode === "url" 
+        ? "http://127.0.0.1:8000/analyze/sentiment/url"
+        : "http://127.0.0.1:8000/analyze/sentiment/text";
+
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          text: mode === "url" ? url : text,
+          [mode]: mode === "url" ? url : text, // Use the correct field name based on mode
         }),
       });
 

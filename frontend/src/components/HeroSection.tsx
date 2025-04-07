@@ -22,7 +22,7 @@ const HeroSection: React.FC = () => {
         {/* Top row with heading and URL checker */}
         <div className="flex flex-col lg:flex-row gap-10 mb-16">
           {/* Left column (40%) - Heading */}
-          <div className="w-full lg:w-[40%] flex flex-col justify-center">
+          <div className="w-full lg:w-[40%] flex flex-col">
             <ScrollAnimation delay={200}>
               <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold leading-tight text-left">
                 TRUE<br /><span className="text-gradient">SCAN</span>
