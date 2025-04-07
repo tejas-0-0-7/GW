@@ -1,15 +1,24 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from app.routes import analyze
 import uvicorn
 from dotenv import load_dotenv
 
 load_dotenv()
 
-
 app = FastAPI(
     title="NLP + Image Credibility API",
     description="API service for credibility analysis, sentiment, and deepfake detection",
     version="1.0.0"
+)
+
+# Configure CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:8080", "http://localhost:3000", "http://localhost:5173"],  # Add your frontend URLs
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Register routes

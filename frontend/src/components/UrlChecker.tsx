@@ -2,20 +2,105 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { CheckCircle, AlertCircle, Search, Link, FileText } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { CheckCircle, AlertCircle, Search, Link, FileText, Info } from "lucide-react";
 import { toast } from "sonner";
 import ScrollAnimation from "./ScrollAnimation";
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
 
 interface UrlCheckerProps {
   isHeroSection?: boolean;
   reducedWidth?: boolean;
 }
 
+interface AnalysisResponse {
+  credibilityScore: number;
+  verdict: string;
+  explanation: string[];
+  factCheckResults: Array<{
+    claim: string;
+    rating: string;
+    source: string;
+    url: string;
+    explanation: string;
+  }>;
+  contentType: string;
+  sentiment: string;
+  sentimentConfidence: number;
+}
+
+const ResultsCard = ({ analysis }: { analysis: AnalysisResponse | null }) => {
+  if (!analysis) return null;
+
+  const getScoreColor = (score: number) => {
+    if (score > 0.7) return "text-green-500";
+    if (score > 0.4) return "text-yellow-500";
+    return "text-red-500";
+  };
+
+  return (
+    <Card className="mt-6 p-6 bg-gradient-to-br from-najm-dark to-najm-dark/90 border border-najm-purple/20">
+      <div className="space-y-6">
+        {/* Header with Score */}
+        <div className="flex items-center justify-between">
+          <h3 className="text-xl font-semibold text-white">Analysis Results</h3>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-400">Credibility Score:</span>
+            <span className={`text-xl font-bold ${getScoreColor(analysis.credibilityScore)}`}>
+              {(analysis.credibilityScore * 100).toFixed(1)}%
+            </span>
+          </div>
+        </div>
+
+        {/* Verdict Section */}
+        <div className="p-4 bg-najm-purple/10 rounded-lg">
+          <div className="flex items-center gap-2">
+            <Info className="w-5 h-5 text-najm-purple" />
+            <h4 className="font-medium text-najm-purple">{analysis.verdict}</h4>
+          </div>
+        </div>
+
+        {/* Key Findings */}
+        <div>
+          <h4 className="text-sm font-medium text-gray-400 mb-3">Key Findings</h4>
+          <ul className="space-y-2">
+            {analysis.explanation.map((point, index) => (
+              <li key={index} className="flex items-start gap-2">
+                <CheckCircle className="w-4 h-4 text-najm-purple mt-1" />
+                <span className="text-sm text-gray-300">{point}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Footer Stats */}
+        <div className="grid grid-cols-2 gap-4 pt-4 border-t border-najm-purple/20">
+          <div>
+            <h4 className="text-sm text-gray-400">Content Type</h4>
+            <p className="text-white font-medium">{analysis.contentType}</p>
+          </div>
+          <div>
+            <h4 className="text-sm text-gray-400">Sentiment</h4>
+            <div className="flex items-center gap-2">
+              <span className="text-white font-medium">{analysis.sentiment}</span>
+              <span className="text-sm text-najm-purple">
+                ({(analysis.sentimentConfidence * 100).toFixed(1)}%)
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Card>
+  );
+};
+
 const UrlChecker: React.FC<UrlCheckerProps> = ({ isHeroSection = false, reducedWidth = false }) => {
   const [url, setUrl] = useState("");
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
   const [mode, setMode] = useState<"url" | "text">("url");
+  const [analysis, setAnalysis] = useState<AnalysisResponse | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,13 +113,26 @@ const UrlChecker: React.FC<UrlCheckerProps> = ({ isHeroSection = false, reducedW
     setLoading(true);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      toast.success("Content analyzed successfully!");
-      // In a real app, you would redirect to results page or show results
+      const response = await fetch("http://127.0.0.1:8000/analyze/sentiment/text", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          text: mode === "url" ? url : text,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Analysis failed");
+      }
+
+      const data: AnalysisResponse = await response.json();
+      setAnalysis(data);
+      toast.success("Analysis completed successfully!");
     } catch (error) {
       toast.error("Failed to analyze content. Please try again.");
+      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -71,7 +169,7 @@ const UrlChecker: React.FC<UrlCheckerProps> = ({ isHeroSection = false, reducedW
         <form onSubmit={handleSubmit} className="space-y-3">
           {mode === "url" ? (
             <div className="relative">
-              <Input 
+              <Input
                 type="url"
                 placeholder="Enter URL to verify content..."
                 value={url}
@@ -99,6 +197,14 @@ const UrlChecker: React.FC<UrlCheckerProps> = ({ isHeroSection = false, reducedW
             {loading ? "Analyzing..." : "Analyze Content"}
           </Button>
         </form>
+
+        {loading ? (
+          <div className="mt-6 flex justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-najm-purple"></div>
+          </div>
+        ) : (
+          <ResultsCard analysis={analysis} />
+        )}
       </div>
     );
   }
@@ -106,11 +212,9 @@ const UrlChecker: React.FC<UrlCheckerProps> = ({ isHeroSection = false, reducedW
   return (
     <section id="url-checker" className="py-16 relative">
       <div className="absolute top-20 left-0 w-96 h-96 bg-najm-blue/10 rounded-full filter blur-[120px] -z-10" />
-      
       <div className="container mx-auto px-6">
         <div className="max-w-4xl mx-auto">
           <div className="grid md:grid-cols-2 gap-10 items-center">
-            
             {/* Vector Graphics Side */}
             <ScrollAnimation delay={200} className="hidden md:block">
               <div className="relative">

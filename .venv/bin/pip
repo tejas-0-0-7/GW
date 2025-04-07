@@ -1,5 +1,5 @@
 #!/bin/sh
-'''exec' "/Users/nishantanand/Desktop/GW Hackathon/.venv/bin/python" "$0" "$@"
+'''exec' "/User/Aditya/Desktop/GW Hackathon/.venv/bin/python" "$0" "$@"
 ' '''
 # -*- coding: utf-8 -*-
 import re
