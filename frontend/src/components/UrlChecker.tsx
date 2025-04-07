@@ -30,64 +30,86 @@ interface AnalysisResponse {
   sentimentConfidence: number;
 }
 
+const ProgressBar = ({ value, label }: { value: number; label: string }) => {
+  const percentage = (value * 100).toFixed(1);
+  
+  return (
+    <div className="space-y-3">
+      <div className="flex justify-between items-center">
+        <span className="text-sm font-medium bg-gradient-to-r from-najm-purple to-purple-400 bg-clip-text text-transparent">
+          {label}
+        </span>
+        <span className="text-lg font-bold bg-gradient-to-r from-najm-purple to-purple-400 bg-clip-text text-transparent">
+          {percentage}%
+        </span>
+      </div>
+      <div className="h-5 w-full bg-gradient-to-r from-najm-dark/30 to-najm-dark/10 rounded-xl p-1 backdrop-blur-sm">
+        <div
+          className={`h-full transition-all duration-1000 ease-out rounded-lg ${
+            value < 0.4 
+              ? 'bg-gradient-to-r from-red-500 via-red-400 to-red-500' 
+              : value < 0.7 
+              ? 'bg-gradient-to-r from-yellow-500 via-orange-400 to-yellow-500'
+              : 'bg-gradient-to-r from-green-400 via-emerald-400 to-green-400'
+          } shadow-lg shadow-najm-purple/20`}
+          style={{ 
+            width: `${percentage}%`,
+            animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+          }}
+        />
+      </div>
+    </div>
+  );
+};
+
 const ResultsCard = ({ analysis }: { analysis: AnalysisResponse | null }) => {
   if (!analysis) return null;
 
-  const getScoreColor = (score: number) => {
-    if (score > 0.7) return "text-green-500";
-    if (score > 0.4) return "text-yellow-500";
-    return "text-red-500";
-  };
-
   return (
-    <Card className="mt-6 p-6 bg-gradient-to-br from-najm-dark to-najm-dark/90 border border-najm-purple/20">
-      <div className="space-y-6">
-        {/* Header with Score */}
-        <div className="flex items-center justify-between">
-          <h3 className="text-xl font-semibold text-white">Analysis Results</h3>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-400">Credibility Score:</span>
-            <span className={`text-xl font-bold ${getScoreColor(analysis.credibilityScore)}`}>
-              {(analysis.credibilityScore * 100).toFixed(1)}%
-            </span>
-          </div>
+    <Card className="mt-6 p-8 bg-gradient-to-br from-najm-dark via-black/90 to-najm-dark border border-najm-purple/30 shadow-xl shadow-najm-purple/10">
+      <div className="space-y-8">
+        {/* Title */}
+        <h2 className="text-2xl font-bold text-center bg-gradient-to-r from-najm-purple to-purple-400 bg-clip-text text-transparent">
+          Analysis Results
+        </h2>
+
+        {/* Scores Section */}
+        <div className="space-y-6 p-6 bg-black/20 rounded-xl backdrop-blur-sm">
+          <ProgressBar value={analysis.credibilityScore} label="Credibility Score" />
+          <ProgressBar value={analysis.sentimentConfidence} label="Confidence Score" />
         </div>
 
         {/* Verdict Section */}
-        <div className="p-4 bg-najm-purple/10 rounded-lg">
-          <div className="flex items-center gap-2">
-            <Info className="w-5 h-5 text-najm-purple" />
-            <h4 className="font-medium text-najm-purple">{analysis.verdict}</h4>
+        <div className="p-5 bg-gradient-to-r from-najm-purple/10 to-purple-400/5 rounded-xl border border-najm-purple/20">
+          <div className="flex items-center gap-3">
+            <Info className="w-6 h-6 text-najm-purple animate-pulse" />
+            <h4 className="font-semibold text-lg text-white/90">{analysis.verdict}</h4>
           </div>
         </div>
 
         {/* Key Findings */}
-        <div>
-          <h4 className="text-sm font-medium text-gray-400 mb-3">Key Findings</h4>
-          <ul className="space-y-2">
+        <div className="space-y-4">
+          <h4 className="text-lg font-medium text-najm-purple">Analysis Details</h4>
+          <ul className="grid gap-3">
             {analysis.explanation.map((point, index) => (
-              <li key={index} className="flex items-start gap-2">
-                <CheckCircle className="w-4 h-4 text-najm-purple mt-1" />
-                <span className="text-sm text-gray-300">{point}</span>
+              <li key={index} 
+                  className="flex items-start gap-3 p-3 bg-gradient-to-r from-najm-purple/5 to-transparent rounded-lg hover:from-najm-purple/10 transition-all duration-300">
+                <CheckCircle className="w-5 h-5 text-najm-purple shrink-0 mt-0.5" />
+                <span className="text-sm text-gray-300 leading-relaxed">{point}</span>
               </li>
             ))}
           </ul>
         </div>
 
         {/* Footer Stats */}
-        <div className="grid grid-cols-2 gap-4 pt-4 border-t border-najm-purple/20">
-          <div>
-            <h4 className="text-sm text-gray-400">Content Type</h4>
+        <div className="grid grid-cols-2 gap-6 pt-6 border-t border-najm-purple/20">
+          <div className="p-4 bg-gradient-to-br from-najm-purple/10 to-transparent rounded-lg">
+            <h4 className="text-sm text-najm-purple mb-2">Content Type</h4>
             <p className="text-white font-medium">{analysis.contentType}</p>
           </div>
-          <div>
-            <h4 className="text-sm text-gray-400">Sentiment</h4>
-            <div className="flex items-center gap-2">
-              <span className="text-white font-medium">{analysis.sentiment}</span>
-              <span className="text-sm text-najm-purple">
-                ({(analysis.sentimentConfidence * 100).toFixed(1)}%)
-              </span>
-            </div>
+          <div className="p-4 bg-gradient-to-br from-najm-purple/10 to-transparent rounded-lg">
+            <h4 className="text-sm text-najm-purple mb-2">Sentiment</h4>
+            <p className="text-white font-medium">{analysis.sentiment}</p>
           </div>
         </div>
       </div>
