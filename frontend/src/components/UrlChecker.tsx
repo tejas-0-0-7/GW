@@ -7,7 +7,7 @@ import { CheckCircle, AlertCircle, Search, Link, FileText, Info } from "lucide-r
 import { toast } from "sonner";
 import ScrollAnimation from "./ScrollAnimation";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8001';
 
 interface UrlCheckerProps {
   isHeroSection?: boolean;
@@ -189,8 +189,8 @@ const UrlChecker: React.FC<UrlCheckerProps> = ({ isHeroSection = false, reducedW
     
     try {
       const endpoint = mode === "url" 
-        ? "http://127.0.0.1:8000/analyze/sentiment/url"
-        : "http://127.0.0.1:8000/analyze/sentiment/text";
+        ? `${API_BASE_URL}/analyze/sentiment/url`
+        : `${API_BASE_URL}/analyze/sentiment/text`;
 
       const response = await fetch(endpoint, {
         method: "POST",

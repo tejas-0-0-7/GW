@@ -122,7 +122,7 @@ document.addEventListener("DOMContentLoaded", () => {
             footerLink.href = `${BASE_URL}/analysis/${data.id}`;
             footerLink.textContent = "View Detailed Analysis on Website →";
         } else {
-            footerLink.href = `${BASE_URL}`;
+            footerLink.href = `https://true-scan.vercel.app`;
             footerLink.textContent = "Analyze More Content on Website →";
         }
     }
